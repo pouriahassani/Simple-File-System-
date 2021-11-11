@@ -99,6 +99,10 @@ int write_block (void *block, int k)
    The following functions are to be called by applications directly. 
 ***********************************************************************/
 
+
+//This function will be used to initialize/create an sfs file system on the virtual
+//disk (high-level formatting the disk). On disk file system structures (like superblock,
+//FAT, etc.) will be initialized as part of this call
 int sfs_format (char *vdiskname)
 {
 	sfs_mount(vdiskname);
@@ -145,6 +149,9 @@ int sfs_format (char *vdiskname)
 	return (0); 
 }
 
+//This function will be used to mount the file system, i.e., to prepare the file
+//system be used. Basically, it will open the regular Linux
+//file (acting as the virtual disk) and obtain an integer file descriptor
 int sfs_mount (char *vdiskname)
 {
     // simply open the Linux file vdiskname and in this
@@ -161,7 +168,8 @@ int sfs_mount (char *vdiskname)
 	else
 		return(0);
 }
-
+//This function will be used to unmount the file system: flush the cached data to
+//disk and close the virtual disk (Linux file) file descriptor.
 int sfs_umount ()
 {
 	int return_value;
@@ -173,7 +181,7 @@ int sfs_umount ()
     return (return_value); 
 }
 
-
+//With this, an applicaton will create a new file with name filename.
 int sfs_create(char *filename)
 {
 	
@@ -282,7 +290,11 @@ int sfs_create(char *filename)
     return (0);
 }
 
-
+//With this an application will open a file. The name of the file to open is
+//filename. The mode paramater specifies if the file will be opened in read-only mode
+//or in append-only mode. If 0, read-only; if 1, append-only. We can either read the file
+//or append to it. A file can not be opened for both reading and appending at the same
+//time. 
 int sfs_open(char *file, int mode)
 {
 	void* block = malloc(BLOCKSIZE);
@@ -393,11 +405,16 @@ int sfs_open(char *file, int mode)
     return fd; 
 }
 
+//With this an application will close a file whose descriptor is fd. The related
+//open file table entry should be marked as free. 
 int sfs_close(int fd){
 	(OFT+fd)->valid = 0;
     return (0); 
 }
 
+//With this an application learns the size of a file whose descriptor is fd. File
+//must be opened first. Returns the number of data bytes in the file. A file with no data
+//in it (no content) has size 0. If error, returns -1.
 int sfs_getsize (int  fd)
 {
 	if((OFT+fd)->valid)
@@ -409,6 +426,8 @@ int sfs_getsize (int  fd)
 	}
 }
 
+
+//With this, an application can read data from a file
 int sfs_read(int fd, void *buf, int n){
 
 	//checks whether n is bigger than he size of the unread part of the file
@@ -491,7 +510,11 @@ int sfs_read(int fd, void *buf, int n){
     return (count); 
 }
 
-
+//With this, an application can append new data to the file. The parameter fd is
+//the file descriptor. The parameter buf is pointing to (i.e., is the address of) a static
+//array holding the data or a dynamically allocted memory space holding the data. The
+//parameter n is the size of the data to write (append) into the file. If error, -1 will be
+//returned. Otherwise, the number of bytes successfully appended will be returned. 
 int sfs_append(int fd, void *buf, int n)
 {
 	int free_block_count = 0;
@@ -815,7 +838,8 @@ int sfs_append(int fd, void *buf, int n)
 	
     return (n); 
 }
-
+//With this, an application can delete a file. The name of the file to be deleted is
+//filename. If succesful, 0 will be returned. In case of an error, -1 will be returned. 
 int sfs_delete(char *file)
 {
 	void* block = malloc(BLOCKSIZE);
