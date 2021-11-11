@@ -8,29 +8,10 @@
 #include "simplefs.h"
 #include <string.h>
 
-int vdisk_fd; // global virtual disk file descriptor
-              // will be assigned with the sfs_mount call
-              // any function in this file can use this.
-
-//Open file data structure
-int size;
-struct OFT_Entry{
-	int size;
-	int start_block_num;
-	int last_block_num;
-	int fd;
-	int mode;
-	int valid;
-	char* name;
-	int file_num;
-	int fpp;
-};
-
 //set the pointer to open file table to NULL 
 //it will be initialized later
 struct OFT_Entry *OFT = NULL;
 
-int num_open_files;
 // This function is simply used to a create a virtual disk
 // (a simple Linux file including all zeros) of the specified size.
 // You can call this function from an app to create a virtual disk.
